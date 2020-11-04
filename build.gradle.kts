@@ -22,7 +22,7 @@ dependencies {
     implementation("it.unibo.apice.scafiteam:scafi-core_2.12:0.3.2")
     implementation("com.typesafe.akka:akka-actor_2.13:2.6.10")
     implementation("com.typesafe.akka:akka-remote_2.13:2.6.10")
-    implementation("it.unibo.scafi:scafi-distributed_2.13:0.3.3")
+    //implementation("it.unibo.scafi:scafi-distributed_2.13:0.3.3")
 
 
 
