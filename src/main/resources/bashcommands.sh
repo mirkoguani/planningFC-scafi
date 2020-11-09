@@ -1,0 +1,1 @@
+docker exec -ti d33 sh -c "cd /app/popf2Planner && ./planPopf2 /app/scenariosPlanner/ma/taxi/p23/domainS.pddl /app/scenariosPlanner/ma/taxi/p23/problemS.pddl outputp23 && cat ./outputPopf2/outputp23.1"

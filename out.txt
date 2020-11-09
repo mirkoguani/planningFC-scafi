@@ -1,0 +1,105 @@
+PROVAAAAA
+Number of literals: 60
+Constructing lookup tables: [10%] [20%] [30%] [40%] [50%] [60%] [70%] [80%] [90%] [100%]
+Post filtering unreachable actions:  [10%] [20%] [30%] [40%] [50%] [60%] [70%] [80%] [90%] [100%]
+[01;34mNo analytic limits found, not considering limit effects of goal-only operators[00m
+Pruning (drive t2 m1 g1) - never appeared in initial RPG
+Pruning (drive t3 m1 g1) - never appeared in initial RPG
+Pruning (drive t1 m2 g2) - never appeared in initial RPG
+Pruning (drive t3 m2 g2) - never appeared in initial RPG
+Pruning (drive t1 m3 g3) - never appeared in initial RPG
+Pruning (drive t2 m3 g3) - never appeared in initial RPG
+Pruning (drive t2 m1 h1) - never appeared in initial RPG
+Pruning (drive t3 m1 h1) - never appeared in initial RPG
+Pruning (drive t1 m2 h2) - never appeared in initial RPG
+Pruning (drive t3 m2 h2) - never appeared in initial RPG
+Pruning (drive t1 m3 h3) - never appeared in initial RPG
+Pruning (drive t2 m3 h3) - never appeared in initial RPG
+Pruning (drive t2 g1 m1) - never appeared in initial RPG
+Pruning (drive t3 g1 m1) - never appeared in initial RPG
+Pruning (drive t2 h1 m1) - never appeared in initial RPG
+Pruning (drive t3 h1 m1) - never appeared in initial RPG
+Pruning (drive t1 g2 m2) - never appeared in initial RPG
+Pruning (drive t3 g2 m2) - never appeared in initial RPG
+Pruning (drive t1 h2 m2) - never appeared in initial RPG
+Pruning (drive t3 h2 m2) - never appeared in initial RPG
+Pruning (drive t1 g3 m3) - never appeared in initial RPG
+Pruning (drive t2 g3 m3) - never appeared in initial RPG
+Pruning (drive t1 h3 m3) - never appeared in initial RPG
+Pruning (drive t2 h3 m3) - never appeared in initial RPG
+Pruning (enter p1 t2 g1) - never appeared in initial RPG
+Pruning (enter p1 t3 g1) - never appeared in initial RPG
+Pruning (enter p2 t1 g2) - never appeared in initial RPG
+Pruning (enter p2 t3 g2) - never appeared in initial RPG
+Pruning (enter p3 t1 g3) - never appeared in initial RPG
+Pruning (enter p3 t2 g3) - never appeared in initial RPG
+Pruning (enter p1 t2 m1) - never appeared in initial RPG
+Pruning (enter p1 t3 m1) - never appeared in initial RPG
+Pruning (enter p2 t1 m2) - never appeared in initial RPG
+Pruning (enter p2 t3 m2) - never appeared in initial RPG
+Pruning (enter p3 t1 m3) - never appeared in initial RPG
+Pruning (enter p3 t2 m3) - never appeared in initial RPG
+Pruning (exit p1 t2 g1) - never appeared in initial RPG
+Pruning (exit p1 t3 g1) - never appeared in initial RPG
+Pruning (exit p2 t1 g2) - never appeared in initial RPG
+Pruning (exit p2 t3 g2) - never appeared in initial RPG
+Pruning (exit p3 t1 g3) - never appeared in initial RPG
+Pruning (exit p3 t2 g3) - never appeared in initial RPG
+All the ground actions in this problem are compression-safe
+Initial heuristic = 12.000
+b (11.000 | 10.000)b (10.000 | 10.000)b (9.000 | 10.000)b (8.000 | 11.001)b (7.000 | 11.001)b (6.000 | 11.001)b (5.000 | 21.002)b (4.000 | 21.002)b (3.000 | 21.002)b (2.000 | 22.003)b (1.000 | 22.003)
+
+
+ - Opening plan file outputp23.1
+; Plan found with metric 22.003
+; States evaluated so far: 13
+; Time 0.06
+0.000: (drive t3 h3 m3)  [10.000]
+0.000: (drive t2 h2 m2)  [10.000]
+0.000: (drive t1 h1 m1)  [10.000]
+10.001: (enter p3 t3 m3)  [1.000]
+10.001: (enter p2 t2 m2)  [1.000]
+10.001: (enter p1 t1 m1)  [1.000]
+11.002: (drive t3 m3 g3)  [10.000]
+11.002: (drive t2 m2 g2)  [10.000]
+11.002: (drive t1 m1 g1)  [10.000]
+21.003: (exit p3 t3 g3)  [1.000]
+21.003: (exit p2 t2 g2)  [1.000]
+21.003: (exit p1 t1 g1)  [1.000]
+
+ * All goal deadlines now no later than 22.003
+
+Resorting to best-first search
+b (11.000 | 10.000)b (10.000 | 10.000)b (9.000 | 10.000)b (8.000 | 11.001)b (7.000 | 11.001)b (6.000 | 11.001)b (5.000 | 21.002)b (4.000 | 21.002)b (3.000 | 21.002)b (2.000 | 22.003)
+Problem Unsolvable
+;;;; Solution Found
+; States evaluated: 32431
+; Cost: 22.003
+; Time 23.44
+0.000: (drive t3 h3 m3)  [10.000]
+0.000: (drive t2 h2 m2)  [10.000]
+0.000: (drive t1 h1 m1)  [10.000]
+10.001: (enter p3 t3 m3)  [1.000]
+10.001: (enter p2 t2 m2)  [1.000]
+10.001: (enter p1 t1 m1)  [1.000]
+11.002: (drive t3 m3 g3)  [10.000]
+11.002: (drive t2 m2 g2)  [10.000]
+11.002: (drive t1 m1 g1)  [10.000]
+21.003: (exit p3 t3 g3)  [1.000]
+21.003: (exit p2 t2 g2)  [1.000]
+21.003: (exit p1 t1 g1)  [1.000]
+; Plan found with metric 22.003
+; States evaluated so far: 13
+; Time 0.06
+0.000: (drive t3 h3 m3)  [10.000]
+0.000: (drive t2 h2 m2)  [10.000]
+0.000: (drive t1 h1 m1)  [10.000]
+10.001: (enter p3 t3 m3)  [1.000]
+10.001: (enter p2 t2 m2)  [1.000]
+10.001: (enter p1 t1 m1)  [1.000]
+11.002: (drive t3 m3 g3)  [10.000]
+11.002: (drive t2 m2 g2)  [10.000]
+11.002: (drive t1 m1 g1)  [10.000]
+21.003: (exit p3 t3 g3)  [1.000]
+21.003: (exit p2 t2 g2)  [1.000]
+21.003: (exit p1 t1 g1)  [1.000]
