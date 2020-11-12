@@ -14,42 +14,55 @@ import scala.language.postfixOps
 
 object Simulator {
   var system: ActorSystem = _
+  var taxis: List[String] = List.empty
+  var passengers: List[String] = List.empty
+  var locations: List[Location] = List.empty
   var actorsTaxi : Array[ActorRef] = _
   var actorsPassengers : Array[ActorRef]  = _
   var actionsFEL: FEL = _
   var planList:List[String] = List.empty
   var listFEL: List[String] = List.empty
-  val log = Logger.getLogger(this.getClass.getName)
+  val log: Logger = Logger.getLogger(this.getClass.getName)
   var makespan :Double = 0.000
   var finalsLocation:List[String] = List.empty
 
 
-  def startSimulationScenarioTaxi (pathPlan: String, namePlan:String, taxis : Array[String], passengers: Array[String]) :Unit = {
-    setupSimulation(pathPlan: String, namePlan:String, taxis : Array[String], passengers: Array[String])
+  def startSimulationScenarioTaxi (pathPlan: String, namePlan:String, pathProblem: String, nameProblem:String) :Unit = {
+    setupSimulation(pathPlan: String, namePlan:String, pathProblem: String, nameProblem:String)
 
     listFEL = actionsFEL.FELtoList()
     for (action <- listFEL){
-      actionHandler(action,taxis,passengers)
+      actionHandler(action)
+    }
+    val goalReached : Boolean = isReachedGoalState(pathProblem, nameProblem)
+    if(goalReached){
+      log.info("GOAL STATE OF THE SIMULATION : REACHED")
+    } else {
+      log.warn("GOAL STATE OF THE SIMULATION : NOT REACHED!!!")
     }
     system.terminate() //terminates ActorSystem
   }
 
-  private def setupSimulation (pathPlan: String, namePlan:String, taxis : Array[String], passengers: Array[String]): Unit ={
+  private def setupSimulation (pathPlan: String, namePlan:String, pathProblem: String, nameProblem:String): Unit ={
     system = ActorSystem("SimulationActorSystem")
     //    val actorSimulator = system.actorOf(Props[Simulator](),"Simulator")
+    taxis = UtilsPlanning.taxiFromProblem(pathProblem, nameProblem)
+    passengers = UtilsPlanning.passengersFromProblem(pathProblem, nameProblem)
     actorsTaxi = new Array[ActorRef](taxis.length)
     actorsPassengers = new Array[ActorRef](passengers.length)
     for(i <- taxis.indices){
-      val actorTaxi : ActorRef = system.actorOf(Props[Taxi](),"Taxi"+taxis(i))
+      val actorTaxi : ActorRef = system.actorOf(Props[Taxi](), taxis(i))
       actorsTaxi(i) = actorTaxi
     }
     for(i <- passengers.indices){
-      val actorPassenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger" + passengers(i))
+      val actorPassenger : ActorRef = system.actorOf(Props[Passenger](), passengers(i))
       actorsPassengers(i) = actorPassenger
     }
+    locations = UtilsPlanning.locationsFromProblem(pathProblem,nameProblem)
 
-    //FEL
-    actionsFEL= new FEL
+    fromInitToTaxiPassengers(pathProblem, nameProblem)
+
+    actionsFEL= new FEL //Future Event List (FEL)
 
     log.info("PlanFromFile")
     planList = UtilsPlanning.planFromFile(pathPlan,namePlan)
@@ -62,14 +75,14 @@ object Simulator {
     actionsFEL.printEventsFEL()
   }
 
-  private def actionHandler(action: String, taxis: Array[String], passengers: Array[String]): Unit = {
+  private def actionHandler(action: String): Unit = {
     if (!action.contains("END_SIMULATION")) {
       var actionParts: Array[String] = action.split(" ")
       makespan = actionParts(2).toDouble
       log.info(action)
 
-      actionHandlerTaxis(action, taxis)
-      actionHandlerPassengers(action, passengers)
+      actionHandlerTaxis(action)
+      actionHandlerPassengers(action)
 
     } //end if !END_SIMULATION
 
@@ -80,20 +93,21 @@ object Simulator {
       implicit val timeout = Timeout(5 seconds)
       for (i <- taxis.indices) {
         val future = actorsTaxi(i) ? GetLocationT()
-        val response = Await.result(future, timeout.duration).asInstanceOf[String]
-        log.info("location " + taxis(i) + " : " + response)
-        finalsLocation = finalsLocation ::: List("location " + taxis(i) + " : " + response)
+        val response = Await.result(future, timeout.duration).asInstanceOf[Location]
+        log.info("at " + taxis(i) + " " + response.name)
+        locations = locations
+        finalsLocation = finalsLocation ::: List("at " + taxis(i) + " " + response.name)
       }
       for (i <- passengers.indices) {
         val future = actorsPassengers(i) ? GetLocationP()
-        val response = Await.result(future, timeout.duration).asInstanceOf[String]
-        log.info("location " + passengers(i) + " : " + response)
-        finalsLocation = finalsLocation ::: List("location " + passengers(i) + " : " + response)
+        val response = Await.result(future, timeout.duration).asInstanceOf[Location]
+        log.info("at " + passengers(i) + " " + response.name)
+        finalsLocation = finalsLocation ::: List("at " + passengers(i) + " " + response.name)
       }
     }
   }
 
-  private def actionHandlerTaxis (action: String, taxis : Array[String]): Unit ={
+  private def actionHandlerTaxis (action: String): Unit ={
     for (i <- taxis.indices) { //cycle on all taxis to see which of them is involved
       if (action.contains(taxis(i))) {
         if (action.contains("START")) {
@@ -101,28 +115,31 @@ object Simulator {
           implicit val timeout = Timeout(5 seconds)
           //taxi start drive
           if (action.contains("drive")) {
-            val future = actorsTaxi(i) ? StartActionDriveT(action)
+            val drive : Drive = new Drive(action, locations)
+            val future = actorsTaxi(i) ? StartActionDriveT(drive)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if (response.compareTo("OK") != 0) {
-              log.warn(response)
+              log.error(response)
               throw new RuntimeException (response)
             }
           }
           //taxi start enter
           if (action.contains("enter")) {
-            val future = actorsTaxi(i) ? StartActionEnterT(action)
+            val enter : Enter = new Enter(action, locations)
+            val future = actorsTaxi(i) ? StartActionEnterT(enter)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if (response.compareTo("OK") != 0) {
-              log.warn(response)
+              log.error(response)
               throw new RuntimeException (response)
             }
           }
           //taxi start exit
           if (action.contains("exit")) {
-            val future = actorsTaxi(i) ? StartActionExitT(action)
+            val exit : Exit = new Exit(action, locations)
+            val future = actorsTaxi(i) ? StartActionExitT(exit)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if (response.compareTo("OK") != 0) {
-              log.warn(response) //prints the error
+              log.error(response) //prints the error
               throw new RuntimeException (response)
             }
           }
@@ -131,15 +148,18 @@ object Simulator {
         if (action.contains("END")) {
           implicit val timeout = Timeout(5 seconds)
           if (action.contains("drive")) {
-            val future = actorsTaxi(i) ? EndActionDriveT(action)
+            val drive : Drive = new Drive(action, locations)
+            val future = actorsTaxi(i) ? EndActionDriveT(drive)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
           if (action.contains("enter")) {
-            val future = actorsTaxi(i) ? EndActionEnterT(action)
+            val enter : Enter = new Enter(action, locations)
+            val future = actorsTaxi(i) ? EndActionEnterT(enter)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
           if (action.contains("exit")) {
-            val future = actorsTaxi(i) ? EndActionExitT(action)
+            val exit : Exit = new Exit(action, locations)
+            val future = actorsTaxi(i) ? EndActionExitT(exit)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
         }
@@ -147,24 +167,26 @@ object Simulator {
     }
   }
 
- private def actionHandlerPassengers (action:String, passengers: Array[String]): Unit ={
+ private def actionHandlerPassengers (action:String): Unit ={
     for (i <- passengers.indices) { //cycle on all passengers to see which of them is involved
       if (action.contains(passengers(i))) {
         if(action.contains("START")) {
           implicit val timeout = Timeout(5 seconds)
           if(action.contains("enter")) {
-            val future = actorsPassengers(i) ? StartActionEnterP(action)
+            val enter : Enter = new Enter(action, locations)
+            val future = actorsPassengers(i) ? StartActionEnterP(enter)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if(response.compareTo("OK") != 0){
-              log.warn(response) //prints the error
+              log.error(response) //prints the error
               throw new RuntimeException (response)
             }
           }
           if(action.contains("exit")) {
-            val future = actorsPassengers(i) ? StartActionExitP(action)
+            val exit : Exit = new Exit(action, locations)
+            val future = actorsPassengers(i) ? StartActionExitP(exit)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if(response.compareTo("OK") != 0){
-              log.warn(response) //prints the error
+              log.error(response) //prints the error
               throw new RuntimeException (response)
             }
           }
@@ -172,17 +194,97 @@ object Simulator {
         if(action.contains("END")) {
           implicit val timeout = Timeout(5 seconds)
           if(action.contains("enter")){
-            val future = actorsPassengers(i) ? EndActionEnterP(action)
+            val enter : Enter = new Enter(action, locations)
+            val future = actorsPassengers(i) ? EndActionEnterP(enter)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
           if(action.contains("exit")){
-            val future = actorsPassengers(i) ? EndActionExitP(action)
+            val exit : Exit = new Exit(action, locations)
+            val future = actorsPassengers(i) ? EndActionExitP(exit)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
 
         }
       }
     }
+  }
+
+  private def fromInitToTaxiPassengers (pathProblem : String , nameProblem : String) : Unit = {
+    var inits: List[String] = UtilsPlanning.initsFromProblem(pathProblem,nameProblem)
+    implicit val timeout = Timeout(5 seconds)
+    for (init <- inits){
+      //preposition : at
+      if(init.contains("at")){
+        var parts : Array[String] = init.split(" ")
+        // add taxi to the Location
+        for (i <- taxis.indices){
+          if (parts(1).compareTo(taxis(i)) ==0){
+            for(location <- locations){
+              if(parts(2).compareTo(location.name)==0){
+                location.taxiIn = taxis(i)
+                val future = actorsTaxi(i) ? SetLocationT(location)
+                val response = Await.result(future, timeout.duration).asInstanceOf[Location]
+              }
+            }
+          }
+        }
+        for (i <- passengers.indices){
+          if (parts(1).compareTo(passengers(i)) ==0){
+            for(location <- locations){
+              if(parts(2).compareTo(location.name)==0){
+                location.addPassengerIn(passengers(i))
+                val future = actorsPassengers(i) ? SetLocationP(location)
+                val response = Await.result(future, timeout.duration).asInstanceOf[Location]
+              }
+            }
+          }
+        }
+      }
+
+      //preposition: empty
+      if(init.contains("empty")){
+        var parts : Array[String] = init.split(" ")
+        for (i <- taxis.indices){
+          if (parts(1).compareTo(taxis(i)) ==0){
+            val future = actorsTaxi(i) ? SetPassengerInT("")
+            val response = Await.result(future, timeout.duration).asInstanceOf[String]
+          }
+        }
+      }
+      //preposition: goal-of
+      if(init.contains("goal-of")){
+        var parts : Array[String] = init.split(" ")
+        for(i <- passengers.indices) {
+          if (parts(1).compareTo(passengers(i)) == 0) {
+            for (location <- locations) {
+              if (parts(2).compareTo(location.name) == 0) {
+                val future = actorsPassengers(i) ? SetLocationGoalP(location)
+                val response = Await.result(future, timeout.duration).asInstanceOf[Location]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  def isReachedGoalState (pathProblem: String, nameProblem: String): Boolean ={
+    var goalsProbl : List[String] = UtilsPlanning.goalsFromProblem(pathProblem, nameProblem)
+    // at t l
+    // at p l
+    var goalReached : Boolean = false
+    for(goalProbl <- goalsProbl){
+      goalReached = false
+      for (goalSimul <- Simulator.finalsLocation){
+        if(goalProbl.compareTo(goalSimul) == 0){
+          goalReached = true
+        }
+      }
+      if(!goalReached){ //if even only one goal was not reached then false
+        return false
+      }
+    }
+    return goalReached
   }
 
 }

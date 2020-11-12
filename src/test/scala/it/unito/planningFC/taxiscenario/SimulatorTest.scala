@@ -3,26 +3,23 @@ package it.unito.planningFC.taxiscenario
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.must.Matchers
+
 import scala.language.postfixOps
+import it.unito.planningFC.utils.UtilsPlanning
+import org.apache.log4j.Logger
 
 class SimulatorTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
 
-  "Simulation" should "end in the goal state" in {
-    val taxis: Array[String] = Array("t1", "t2", "t3");
-    val passengers: Array[String] = Array("p1", "p2", "p3", "p4", "p5", "p6", "p7")
+  "Simulation" should "ends in the goal state" in {
     val pathPlan: String = System.getProperty("user.dir") + "\\src\\main\\resources"
-    val namePlan: String = "outp21";
+    val namePlan: String = "outputPlan";
+    val pathProblem: String = System.getProperty("user.dir") + "\\src\\main\\resources"
+    val nameProblem: String = "problemS.pddl";
 
-    Simulator.startSimulationScenarioTaxi(pathPlan, namePlan, taxis, passengers)
+    Simulator.startSimulationScenarioTaxi(pathPlan, namePlan, pathProblem, nameProblem)
 
-    var target: List[String] = List("location t1 : e", "location t2 : d", "location t3 : c", "location p1 : h2", "location p2 : h3", "location p3 : c", "location p4 : c", "location p5 : d", "location p6 : h3", "location p7 : e")
-
-    for (i <- target.indices) {
-      assert(target(i).compareTo(Simulator.finalsLocation(i)) == 0)
-    }
+    assert(Simulator.isReachedGoalState(pathProblem,nameProblem))
   }
-
-
 
 }
 

@@ -6,30 +6,35 @@ import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.must.Matchers
 import akka.pattern.ask
 import akka.util.Timeout
+import it.unito.planningFC.taxiscenario
+import org.apache.log4j.Logger
+
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.concurrent.{Await, Future}
 
 class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
-
+  val log: Logger = Logger.getLogger(this.getClass.getName)
   "GetLocationP" should "gets the passenger's location" in {
     val system = ActorSystem("SimulationActorSystem")
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")
     implicit val timeout = Timeout(5 seconds)
     val future = passenger ? GetLocationP()
-    val result = Await.result(future, timeout.duration).asInstanceOf[String]
+    val result = Await.result(future, timeout.duration).asInstanceOf[Location]
     system.terminate()
-    assert(result == "")
+    assert(result.name == "")
   }
 
   "SetLocationP" should "sets the passenger's location" in {
     val system = ActorSystem("SimulationActorSystem")
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")
     implicit val timeout = Timeout(5 seconds)
-    val future = passenger ? SetLocationP("l1")
-    val result = Await.result(future, timeout.duration).asInstanceOf[String]
+    var location : Location = new Location
+    location.name = "l1"
+    val future = passenger ? SetLocationP(location)
+    val result = Await.result(future, timeout.duration).asInstanceOf[Location]
     system.terminate()
-    assert(result == "l1")
+    assert(result.name == "l1")
   }
 
   "GetInTaxiP" should "gets which passenger is in the taxi" in {
@@ -59,11 +64,15 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")
     var resultTest : Boolean = false
     implicit val timeout = Timeout(5 seconds)
-    var future = passenger ? SetLocationP("l")
-    var response :String = Await.result(future, timeout.duration).asInstanceOf[String]
-    future = passenger ? StartActionEnterP(action)
-    response = Await.result(future, timeout.duration).asInstanceOf[String]
-    if (response.compareTo("OK") != 0) {
+    val location : Location = new Location()
+    location.name = "l"
+    val locations : List[Location] = List(location)
+    val future = passenger ? SetLocationP(location)
+    var response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
+    val enter : Enter = new Enter(action,locations)
+    val futureAct = passenger ? StartActionEnterP(enter)
+    val responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
+    if (responseAct.compareTo("OK") != 0) {
       resultTest = false
     } else {
       resultTest = true
@@ -73,26 +82,33 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
   }
 
   "Test EndActionEnterP" should "return true if works correctly" in {
+
     val action:String = "At end 1.0   END: (enter p2 t1 l)"
 
     val system = ActorSystem("SimulationActorSystem")
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")
     var resultTest : Boolean = false
     implicit val timeout = Timeout(5 seconds)
-    var future = passenger ? SetLocationP("l")
-    var response :String = Await.result(future, timeout.duration).asInstanceOf[String]
-    future = passenger ? EndActionEnterP(action)
-    response = Await.result(future, timeout.duration).asInstanceOf[String]
-    if (response.compareTo("OK") != 0) {
+    val location : Location = new Location()
+    location.name = "l"
+    val locations:List[Location] = List(location)
+    var future = passenger ? SetLocationP(location)
+    var response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
+    var futureAct = passenger ? SetInTaxiP("t1")
+    var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
+    val enter : Enter = new Enter(action,locations)
+    futureAct = passenger ? EndActionEnterP(enter)
+    responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
+    if (responseAct.compareTo("OK") != 0) {
       resultTest = false
     } else {
       resultTest = true
     }
-    future = passenger ? GetInTaxiP()
-    response = Await.result(future, timeout.duration).asInstanceOf[String]
-
+    futureAct = passenger ? GetInTaxiP()
+    responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
+    log.info(responseAct)
     system.terminate()
-    assert(resultTest && response.compareTo("t1") == 0)
+    assert(resultTest && responseAct.compareTo("t1") == 0)
   }
 
   "Test StartActionExitP" should "return true if works correctly" in {
@@ -102,13 +118,19 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")
     var resultTest : Boolean = false
     implicit val timeout = Timeout(5 seconds)
-    var future = passenger ? SetLocationP("l")
-    var response :String = Await.result(future, timeout.duration).asInstanceOf[String]
-    future = passenger ? SetInTaxiP("t1")
-    response = Await.result(future, timeout.duration).asInstanceOf[String]
-    future = passenger ? StartActionExitP(action)
-    response = Await.result(future, timeout.duration).asInstanceOf[String]
-    if (response.compareTo("OK") != 0) {
+    val location : Location = new Location()
+    location.name = "l"
+    val locations:List[Location] = List(location)
+    var future = passenger ? SetLocationP(location)
+    var response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
+    future = passenger ? SetLocationGoalP(location)
+    response = Await.result(future, timeout.duration).asInstanceOf[Location]
+    var futureAct = passenger ? SetInTaxiP("t1")
+    var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
+    var exit : Exit = new Exit(action, locations)
+    futureAct = passenger ? StartActionExitP(exit)
+    responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
+    if (responseAct.compareTo("OK") != 0) {
       resultTest = false
     } else {
       resultTest = true
@@ -117,27 +139,31 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     assert(resultTest)
   }
 
-  "Test EndActionExitT" should "return true if works correctly" in {
+  "Test EndActionExitP" should "return true if works correctly" in {
     val action:String = "At end 21.0   END: (exit p2 t1 l)"
 
     val system = ActorSystem("SimulationActorSystem")
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")
     var resultTest : Boolean = false
     implicit val timeout = Timeout(5 seconds)
-    var future = passenger ? SetLocationP("l")
-    var response :String = Await.result(future, timeout.duration).asInstanceOf[String]
-    future = passenger ? EndActionExitP(action)
-    response = Await.result(future, timeout.duration).asInstanceOf[String]
-    if (response.compareTo("OK") != 0) {
+    val location : Location = new Location()
+    location.name = "l"
+    val locations:List[Location] = List(location)
+    val future = passenger ? SetLocationP(location)
+    val response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
+    var exit : Exit = new Exit(action, locations)
+    var futureAct = passenger ? EndActionExitP(exit)
+    var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
+    if (responseAct.compareTo("OK") != 0) {
       resultTest = false
     } else {
       resultTest = true
     }
-    future = passenger ? GetInTaxiP()
-    response = Await.result(future, timeout.duration).asInstanceOf[String]
+    futureAct = passenger ? GetInTaxiP()
+    responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
 
     system.terminate()
-    assert(resultTest && response.compareTo("") == 0)
+    assert(resultTest && responseAct.compareTo("") == 0)
   }
 
 }

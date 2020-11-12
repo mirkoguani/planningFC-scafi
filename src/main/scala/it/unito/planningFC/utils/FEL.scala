@@ -10,7 +10,7 @@ class FEL {
   }
   var actionsFEL : List [EventActionFEL] = List[EventActionFEL]()
 
-  val log = Logger.getLogger(this.getClass.getName)
+  val log: Logger = Logger.getLogger(this.getClass.getName)
 
   def addEventFEL (nameEv: String, timeOccur: Double): Unit = {
     val eventAction : EventActionFEL = new EventActionFEL(nameEv, timeOccur)
@@ -47,7 +47,7 @@ class FEL {
     actionsFEL = List.empty //reinitialize FEL
     addEventFEL("END_SIMULATION", Double.MaxValue)
     for (actionPlan <- planList){
-      var parts: Array[String] = actionPlan.split(":");
+      var parts: Array[String] = actionPlan.split(":")
       var timeStartAction: Double =  parts(0).toDouble
       parts = parts(1).split("\\[")
       var action : String = parts(0).trim()

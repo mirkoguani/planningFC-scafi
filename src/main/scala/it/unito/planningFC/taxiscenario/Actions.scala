@@ -1,11 +1,11 @@
 package it.unito.planningFC.taxiscenario
 
 
-class Drive (action: String) {
+class Drive (action: String, locations:List[Location]) {
   var actionType: String = ""
   var taxi: String = ""
-  var locationFrom: String = ""
-  var locationTo: String = ""
+  var locationFrom: Location = _
+  var locationTo: Location = _
 
   //parsing the action
   private var actionParsed: String = action //default
@@ -22,16 +22,26 @@ class Drive (action: String) {
     //so we get from the drive action:   t1 e h3
     parts = actionParsed.split(" ")
     taxi = parts(0)
-    locationFrom = parts(1)
-    locationTo = parts(2)
+    //locationFrom
+    for (location <- locations){
+      if(location.name.compareTo(parts(1))==0){
+        locationFrom = location
+      }
+    }
+    //locationTo
+    for (location <- locations){
+      if(location.name.compareTo(parts(2))==0){
+        locationTo = location
+      }
+    }
   }
 }
 
-class Enter (action: String) {
+class Enter (action: String, locations:List[Location]) {
   var actionType: String = ""
   var passenger: String = ""
   var taxi: String = ""
-  var location: String = ""
+  var location: Location = _
 
   //parsing the action
   private var actionParsed: String = action //default
@@ -49,15 +59,21 @@ class Enter (action: String) {
     parts = actionParsed.split(" ")
     passenger = parts(0)
     taxi = parts(1)
-    location = parts(2)
+
+    for (loc <- locations){
+      if(loc.name.compareTo(parts(2))==0){
+        location = loc
+      }
+    }
+
   }
 }
 
-class Exit (action: String) {
+class Exit (action: String, locations: List[Location]) {
   var actionType: String = ""
   var passenger: String = ""
   var taxi: String = ""
-  var location: String = ""
+  var location: Location = _
 
   //parsing the action
   private var actionParsed: String = action //default
@@ -75,6 +91,11 @@ class Exit (action: String) {
     parts = actionParsed.split(" ")
     passenger = parts(0)
     taxi = parts(1)
-    location = parts(2)
+    //location = parts(2)
+    for (loc <- locations){
+      if(loc.name.compareTo(parts(2))==0){
+        location = loc
+      }
+    }
   }
 }

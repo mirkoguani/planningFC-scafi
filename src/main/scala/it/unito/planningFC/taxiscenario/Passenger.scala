@@ -1,27 +1,27 @@
 package it.unito.planningFC.taxiscenario
 
-import akka.actor.{Actor}
+import akka.actor.Actor
 
-case class StartActionEnterP(action: String)
-case class EndActionEnterP(action: String)
-case class StartActionExitP(action: String)
-case class EndActionExitP(action: String)
+case class StartActionEnterP(actionEnter : Enter)
+case class EndActionEnterP(actionEnter : Enter)
+case class StartActionExitP(actionExit : Exit)
+case class EndActionExitP(actionExit : Exit)
 case class GetLocationP()
 case class GetInTaxiP()
-case class SetLocationP(location:String)
+case class GetLocationGoalP()
+case class SetLocationP(location:Location)
 case class SetInTaxiP(taxi:String)
+case class SetLocationGoalP(location: Location)
 
 class Passenger extends Actor {
-  //val log = Logging(context.system, this)
-  //log.debug("prova debug attore")
 
-  private var _location:String = ""
+  private var _location:Location = new Location
   private var _inTaxi: String = ""
   private var _xfreex: Boolean = true //if the taxi is free to be used (true) or busy in an action (false)
-  private var _locationGoal:String =""
+  private var _locationGoal:Location = new Location
 
-  def location:String = _location
-  def location_=(location: String) : Unit = {
+  def location:Location = _location
+  def location_=(location: Location) : Unit = {
     _location = location
   }
 
@@ -35,44 +35,38 @@ class Passenger extends Actor {
     _xfreex = xfreex
   }
 
-  def locationGoal:String = _locationGoal
-  def locationGoal_=(locationGoal: String) : Unit = {
+  def locationGoal:Location = _locationGoal
+  def locationGoal_=(locationGoal: Location) : Unit = {
     _locationGoal = locationGoal
   }
 
   override def receive: Receive = {
-    case StartActionEnterP(action) => {
-      val actionEnter: Enter = new Enter(action)
-
-      // ensuring that the taxi is empty
-      if (inTaxi.compareTo("") == 0 && xfreex) {
+    case StartActionEnterP(actionEnter : Enter) => {
+      // ensuring that the taxi is empty and the passenger is in that location
+      if (inTaxi.compareTo("") == 0 && xfreex && _location.name.compareTo(actionEnter.location.name)==0) {
         xfreex = false
-        location = actionEnter.location
         sender() ! "OK"
       } else {
-        sender() ! "ERROR! Something went wrong! The passenger " + actionEnter.passenger + " is already in a taxi, taxi " + inTaxi
+        sender() ! "ERROR! Something went wrong! The passenger " + actionEnter.passenger + " is already in a taxi (taxi " + inTaxi +") or he isn't in that location"
       }
     }
 
-    case EndActionEnterP(action) => {
-      val actionEnter : Enter = new Enter(action)
+    case EndActionEnterP(actionEnter : Enter) => {
       xfreex = true
       inTaxi = actionEnter.taxi
       sender() ! "OK"
     }
 
-    case StartActionExitP(action) => {
-      val actionExit: Exit = new Exit(action)
-      if (inTaxi.compareTo(actionExit.taxi) == 0 && xfreex) {  // && locationGoal.compareTo(actionExit.location) ==0
+    case StartActionExitP(actionExit : Exit) => {
+      if (inTaxi.compareTo(actionExit.taxi) == 0 && xfreex && locationGoal.name.compareTo(actionExit.location.name) ==0) {
         xfreex = false
         sender() ! "OK"
       } else {
-        sender() ! "ERROR! Something went wrong! The passenger " + actionExit.passenger + " isn't in taxi " + inTaxi + " or the location to ge out is not the location goal"
+        sender() ! "ERROR! Something went wrong! The passenger " + actionExit.passenger + " isn't in taxi " + inTaxi + " or the location to get out is not the location goal"
       }
     }
 
-    case EndActionExitP(action) => {
-      val actionExit : Exit = new Exit(action)
+    case EndActionExitP(actionExit : Exit) => {
       xfreex = true
       inTaxi = ""
       location = actionExit.location
@@ -86,8 +80,11 @@ class Passenger extends Actor {
     case GetInTaxiP () => {
       sender() ! inTaxi
     }
+    case GetLocationGoalP () => {
+      sender() ! locationGoal
+    }
 
-    case SetLocationP (location : String) => {
+    case SetLocationP (location : Location) => {
       _location = location
       sender() ! location
     }
@@ -95,6 +92,11 @@ class Passenger extends Actor {
     case SetInTaxiP (taxi :String) => {
       _inTaxi = taxi
       sender() ! inTaxi
+    }
+
+    case SetLocationGoalP (locationGoal : Location) => {
+      _locationGoal = locationGoal
+      sender() ! locationGoal
     }
 
   }
