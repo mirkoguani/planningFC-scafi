@@ -1,26 +1,11 @@
 package it.unito.planningFC.taxiscenario
 
 class Location {
-  private var _name:String = ""
-  private var _taxiIn: String = ""
-  private var _passengersIn: List[String] = List.empty //in a Location there can be more passengers but only one taxi
-  private var _free: Boolean = false
-  private var _connectedLocations : List[Location] = List.empty
-
-  def name:String = _name
-  def name_=(name: String) : Unit = {
-    _name = name
-  }
-
-  def taxiIn:String = _taxiIn
-  def taxiIn_=(taxiIn: String) : Unit = {
-    _taxiIn = taxiIn
-  }
-
-  def passengersIn:List[String] = _passengersIn
-  def passengersIn_=(passengersIn: List[String]) : Unit = {
-    _passengersIn = passengersIn
-  }
+  var name:String = ""
+  var taxiIn: String = ""
+  var passengersIn: List[String] = List.empty //in a Location there can be more passengers but only one taxi
+  var free: Boolean = false
+  var connectedLocations : List[Location] = List.empty
 
   def addPassengerIn (passenger: String): Unit = {
     if (!passengersIn.contains(passenger)) {
@@ -35,17 +20,7 @@ class Location {
         passengers = passengers ::: List(passenger)
       }
     }
-    _passengersIn = passengers
-  }
-
-  def free:Boolean = _free
-  def free_=(free: Boolean) : Unit = {
-    _free = free
-  }
-
-  def connectedLocations:List[Location] = _connectedLocations
-  def connectedLocations_=(connectedLocations: List[Location]) : Unit = {
-    _connectedLocations = connectedLocations
+    passengersIn = passengers
   }
 
   def addConnectedLocation (location: Location) : Unit = {
@@ -56,28 +31,26 @@ class Location {
       }
     }
     if(!found) {
-      _connectedLocations = _connectedLocations ::: List(location)
+      connectedLocations = connectedLocations ::: List(location)
     }
   }
 
   def isDirectlyConnected(nameLocation : String): Boolean ={
     for (location <- connectedLocations){
       if(location.name.compareTo(nameLocation) == 0){
-        return true
+        true
       }
     }
-    return false
+    false
   }
 
   def isDirectlyConnected(location : Location): Boolean ={
     for (loc <- connectedLocations){
       if(loc.name.compareTo(location.name) == 0){
-        return true
+        true
       }
     }
-    return false
+    false
   }
-
-
 
 }

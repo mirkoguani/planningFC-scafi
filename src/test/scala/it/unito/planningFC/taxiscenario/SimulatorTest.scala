@@ -3,10 +3,7 @@ package it.unito.planningFC.taxiscenario
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.must.Matchers
-
 import scala.language.postfixOps
-import it.unito.planningFC.utils.UtilsPlanning
-import org.apache.log4j.Logger
 
 class SimulatorTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
 

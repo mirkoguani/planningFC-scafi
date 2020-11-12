@@ -17,7 +17,7 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     val system = ActorSystem("SimulationActorSystem")
     val taxi : ActorRef = system.actorOf(Props[Taxi](),"Taxi")
     implicit val timeout = Timeout(5 seconds)
-    val future = taxi ? GetLocationT()
+    val future = taxi ? Message.GetLocationT()
     val result = Await.result(future, timeout.duration).asInstanceOf[Location]
     system.terminate()
     assert(result.name == "")
@@ -29,7 +29,7 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     implicit val timeout = Timeout(5 seconds)
     var location : Location = new Location
     location.name = "h1"
-    val future = taxi ? SetLocationT(location)
+    val future = taxi ? Message.SetLocationT(location)
     val result = Await.result(future, timeout.duration).asInstanceOf[Location]
     system.terminate()
     assert(result.name == "h1")
@@ -40,7 +40,7 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     val system = ActorSystem("SimulationActorSystem")
     val taxi : ActorRef = system.actorOf(Props[Taxi](),"Taxi")
     implicit val timeout = Timeout(5 seconds)
-    val future = taxi ? GetPassengerInT()
+    val future = taxi ? Message.GetPassengerInT()
     val result = Await.result(future, timeout.duration).asInstanceOf[String]
     system.terminate()
     assert(result == "")
@@ -50,7 +50,7 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     val system = ActorSystem("SimulationActorSystem")
     val taxi : ActorRef = system.actorOf(Props[Taxi](),"Taxi")
     implicit val timeout = Timeout(5 seconds)
-    val future = taxi ? SetPassengerInT("p1")
+    val future = taxi ? Message.SetPassengerInT("p1")
     val result = Await.result(future, timeout.duration).asInstanceOf[String]
     system.terminate()
     assert(result == "p1")
@@ -69,10 +69,10 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     locationTo.name = "g3"
     locationTo.taxiIn = ""
     val locations : List[Location] = List(locationFrom, locationTo)
-    val future = taxi ? SetLocationT(locationFrom)
+    val future = taxi ? Message.SetLocationT(locationFrom)
     var response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
     val drive : Drive = new Drive(action,locations)
-    val futureAct = taxi ? StartActionDriveT(drive)
+    val futureAct = taxi ? Message.StartActionDriveT(drive)
     val responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
@@ -95,17 +95,17 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     val locationTo : Location = new Location()
     locationTo.name = "g3"
     val locations : List[Location] = List(locationFrom, locationTo)
-    var future = taxi ? SetLocationT(locationFrom)
+    var future = taxi ? Message.SetLocationT(locationFrom)
     var response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
     var drive : Drive = new Drive(action,locations)
-    var futureAct = taxi ? EndActionDriveT(drive)
+    var futureAct = taxi ? Message.EndActionDriveT(drive)
     var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
     } else {
       resultTest = true
     }
-    future = taxi ? GetLocationT()
+    future = taxi ? Message.GetLocationT()
     response = Await.result(future, timeout.duration).asInstanceOf[Location]
 
     system.terminate()
@@ -122,10 +122,10 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     val location : Location = new Location
     location.name = "l"
     val locations : List[Location] = List(location)
-    val future = taxi ? SetLocationT(location)
+    val future = taxi ? Message.SetLocationT(location)
     val response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
     val enter : Enter = new Enter(action,locations)
-    val futureAct = taxi ? StartActionEnterT(enter)
+    val futureAct = taxi ? Message.StartActionEnterT(enter)
     val responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
@@ -147,17 +147,17 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     val location : Location = new Location
     location.name = "l"
     val locations : List[Location] = List(location)
-    val future = taxi ? SetLocationT(location)
+    val future = taxi ? Message.SetLocationT(location)
     val response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
     val enter : Enter = new Enter(action,locations)
-    var futureAct = taxi ? EndActionEnterT(enter)
+    var futureAct = taxi ? Message.EndActionEnterT(enter)
     var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
     } else {
       resultTest = true
     }
-    futureAct = taxi ? GetPassengerInT()
+    futureAct = taxi ? Message.GetPassengerInT()
     responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     system.terminate()
     assert(resultTest && responseAct.compareTo("p2") == 0)
@@ -172,13 +172,13 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     implicit val timeout = Timeout(5 seconds)
     val location : Location = new Location
     location.name = "l"
-    var futureAct = taxi ? SetPassengerInT("p2")
+    var futureAct = taxi ? Message.SetPassengerInT("p2")
     var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     val locations : List[Location] = List(location)
-    val future = taxi ? SetLocationT(location)
+    val future = taxi ? Message.SetLocationT(location)
     val response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
     val exit : Exit = new Exit(action,locations)
-    futureAct = taxi ? StartActionExitT(exit)
+    futureAct = taxi ? Message.StartActionExitT(exit)
     responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
@@ -199,19 +199,19 @@ class TaxiTest extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
     val location : Location = new Location
     location.name = "l"
     val locations : List[Location] = List(location)
-    val future = taxi ? SetLocationT(location)
+    val future = taxi ? Message.SetLocationT(location)
     val response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
-    var futureAct = taxi ? SetPassengerInT("p2")
+    var futureAct = taxi ? Message.SetPassengerInT("p2")
     var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     val exit : Exit = new Exit(action,locations)
-    futureAct = taxi ? EndActionExitT(exit)
+    futureAct = taxi ? Message.EndActionExitT(exit)
     responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
     } else {
       resultTest = true
     }
-    futureAct = taxi ? GetPassengerInT()
+    futureAct = taxi ? Message.GetPassengerInT()
     responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
 
     system.terminate()

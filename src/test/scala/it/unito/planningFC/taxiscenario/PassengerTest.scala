@@ -19,7 +19,7 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     val system = ActorSystem("SimulationActorSystem")
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")
     implicit val timeout = Timeout(5 seconds)
-    val future = passenger ? GetLocationP()
+    val future = passenger ? Message.GetLocationP()
     val result = Await.result(future, timeout.duration).asInstanceOf[Location]
     system.terminate()
     assert(result.name == "")
@@ -31,7 +31,7 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     implicit val timeout = Timeout(5 seconds)
     var location : Location = new Location
     location.name = "l1"
-    val future = passenger ? SetLocationP(location)
+    val future = passenger ? Message.SetLocationP(location)
     val result = Await.result(future, timeout.duration).asInstanceOf[Location]
     system.terminate()
     assert(result.name == "l1")
@@ -41,7 +41,7 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     val system = ActorSystem("SimulationActorSystem")
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")
     implicit val timeout = Timeout(5 seconds)
-    val future = passenger ? GetInTaxiP()
+    val future = passenger ? Message.GetInTaxiP()
     val result = Await.result(future, timeout.duration).asInstanceOf[String]
     system.terminate()
     assert(result == "")
@@ -51,7 +51,7 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     val system = ActorSystem("SimulationActorSystem")
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")
     implicit val timeout = Timeout(5 seconds)
-    val future = passenger ? SetInTaxiP("t1")
+    val future = passenger ? Message.SetInTaxiP("t1")
     val result = Await.result(future, timeout.duration).asInstanceOf[String]
     system.terminate()
     assert(result == "t1")
@@ -67,10 +67,10 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     val location : Location = new Location()
     location.name = "l"
     val locations : List[Location] = List(location)
-    val future = passenger ? SetLocationP(location)
+    val future = passenger ? Message.SetLocationP(location)
     var response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
     val enter : Enter = new Enter(action,locations)
-    val futureAct = passenger ? StartActionEnterP(enter)
+    val futureAct = passenger ? Message.StartActionEnterP(enter)
     val responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
@@ -92,19 +92,19 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     val location : Location = new Location()
     location.name = "l"
     val locations:List[Location] = List(location)
-    var future = passenger ? SetLocationP(location)
+    var future = passenger ? Message.SetLocationP(location)
     var response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
-    var futureAct = passenger ? SetInTaxiP("t1")
+    var futureAct = passenger ? Message.SetInTaxiP("t1")
     var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     val enter : Enter = new Enter(action,locations)
-    futureAct = passenger ? EndActionEnterP(enter)
+    futureAct = passenger ?Message. EndActionEnterP(enter)
     responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
     } else {
       resultTest = true
     }
-    futureAct = passenger ? GetInTaxiP()
+    futureAct = passenger ? Message.GetInTaxiP()
     responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     log.info(responseAct)
     system.terminate()
@@ -121,14 +121,14 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     val location : Location = new Location()
     location.name = "l"
     val locations:List[Location] = List(location)
-    var future = passenger ? SetLocationP(location)
+    var future = passenger ? Message.SetLocationP(location)
     var response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
-    future = passenger ? SetLocationGoalP(location)
+    future = passenger ? Message.SetLocationGoalP(location)
     response = Await.result(future, timeout.duration).asInstanceOf[Location]
-    var futureAct = passenger ? SetInTaxiP("t1")
+    var futureAct = passenger ? Message.SetInTaxiP("t1")
     var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     var exit : Exit = new Exit(action, locations)
-    futureAct = passenger ? StartActionExitP(exit)
+    futureAct = passenger ? Message.StartActionExitP(exit)
     responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
@@ -149,17 +149,17 @@ class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matche
     val location : Location = new Location()
     location.name = "l"
     val locations:List[Location] = List(location)
-    val future = passenger ? SetLocationP(location)
+    val future = passenger ? Message.SetLocationP(location)
     val response :Location = Await.result(future, timeout.duration).asInstanceOf[Location]
     var exit : Exit = new Exit(action, locations)
-    var futureAct = passenger ? EndActionExitP(exit)
+    var futureAct = passenger ? Message.EndActionExitP(exit)
     var responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
     if (responseAct.compareTo("OK") != 0) {
       resultTest = false
     } else {
       resultTest = true
     }
-    futureAct = passenger ? GetInTaxiP()
+    futureAct = passenger ? Message.GetInTaxiP()
     responseAct = Await.result(futureAct, timeout.duration).asInstanceOf[String]
 
     system.terminate()

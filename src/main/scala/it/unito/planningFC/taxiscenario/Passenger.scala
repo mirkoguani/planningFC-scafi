@@ -1,49 +1,20 @@
 package it.unito.planningFC.taxiscenario
 
 import akka.actor.Actor
-
-case class StartActionEnterP(actionEnter : Enter)
-case class EndActionEnterP(actionEnter : Enter)
-case class StartActionExitP(actionExit : Exit)
-case class EndActionExitP(actionExit : Exit)
-case class GetLocationP()
-case class GetInTaxiP()
-case class GetLocationGoalP()
-case class SetLocationP(location:Location)
-case class SetInTaxiP(taxi:String)
-case class SetLocationGoalP(location: Location)
+import it.unito.planningFC.taxiscenario.Message
 
 class Passenger extends Actor {
 
-  private var _location:Location = new Location
-  private var _inTaxi: String = ""
-  private var _xfreex: Boolean = true //if the taxi is free to be used (true) or busy in an action (false)
-  private var _locationGoal:Location = new Location
+  var location:Location = new Location
+  var inTaxi: String = ""
+  var xfreex: Boolean = true //if the taxi is free to be used (true) or busy in an action (false)
+  var locationGoal:Location = new Location
 
-  def location:Location = _location
-  def location_=(location: Location) : Unit = {
-    _location = location
-  }
-
-  def inTaxi:String = _inTaxi
-  def inTaxi_=(inTaxi: String) :Unit = {
-    _inTaxi = inTaxi
-  }
-
-  def xfreex:Boolean = _xfreex
-  def xfreex_=(xfreex: Boolean) :Unit = {
-    _xfreex = xfreex
-  }
-
-  def locationGoal:Location = _locationGoal
-  def locationGoal_=(locationGoal: Location) : Unit = {
-    _locationGoal = locationGoal
-  }
 
   override def receive: Receive = {
-    case StartActionEnterP(actionEnter : Enter) => {
+    case Message.StartActionEnterP(actionEnter : Enter) => {
       // ensuring that the taxi is empty and the passenger is in that location
-      if (inTaxi.compareTo("") == 0 && xfreex && _location.name.compareTo(actionEnter.location.name)==0) {
+      if (inTaxi.compareTo("") == 0 && xfreex && location.name.compareTo(actionEnter.location.name)==0) {
         xfreex = false
         sender() ! "OK"
       } else {
@@ -51,13 +22,13 @@ class Passenger extends Actor {
       }
     }
 
-    case EndActionEnterP(actionEnter : Enter) => {
+    case Message.EndActionEnterP(actionEnter : Enter) => {
       xfreex = true
       inTaxi = actionEnter.taxi
       sender() ! "OK"
     }
 
-    case StartActionExitP(actionExit : Exit) => {
+    case Message.StartActionExitP(actionExit : Exit) => {
       if (inTaxi.compareTo(actionExit.taxi) == 0 && xfreex && locationGoal.name.compareTo(actionExit.location.name) ==0) {
         xfreex = false
         sender() ! "OK"
@@ -66,36 +37,36 @@ class Passenger extends Actor {
       }
     }
 
-    case EndActionExitP(actionExit : Exit) => {
+    case Message.EndActionExitP(actionExit : Exit) => {
       xfreex = true
       inTaxi = ""
       location = actionExit.location
       sender() ! "OK"
     }
 
-    case GetLocationP () => {
+    case Message.GetLocationP () => {
       sender() ! location
     }
 
-    case GetInTaxiP () => {
+    case Message.GetInTaxiP () => {
       sender() ! inTaxi
     }
-    case GetLocationGoalP () => {
+    case Message.GetLocationGoalP () => {
       sender() ! locationGoal
     }
 
-    case SetLocationP (location : Location) => {
-      _location = location
+    case Message.SetLocationP (loc : Location) => {
+      location = loc
       sender() ! location
     }
 
-    case SetInTaxiP (taxi :String) => {
-      _inTaxi = taxi
+    case Message.SetInTaxiP (taxi :String) => {
+      inTaxi = taxi
       sender() ! inTaxi
     }
 
-    case SetLocationGoalP (locationGoal : Location) => {
-      _locationGoal = locationGoal
+    case Message.SetLocationGoalP (locGoal : Location) => {
+      locationGoal = locGoal
       sender() ! locationGoal
     }
 

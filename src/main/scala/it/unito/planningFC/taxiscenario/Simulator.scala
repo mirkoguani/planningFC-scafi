@@ -92,14 +92,14 @@ object Simulator {
       log.info("Time: " + makespan)
       implicit val timeout = Timeout(5 seconds)
       for (i <- taxis.indices) {
-        val future = actorsTaxi(i) ? GetLocationT()
+        val future = actorsTaxi(i) ? Message.GetLocationT()
         val response = Await.result(future, timeout.duration).asInstanceOf[Location]
         log.info("at " + taxis(i) + " " + response.name)
         locations = locations
         finalsLocation = finalsLocation ::: List("at " + taxis(i) + " " + response.name)
       }
       for (i <- passengers.indices) {
-        val future = actorsPassengers(i) ? GetLocationP()
+        val future = actorsPassengers(i) ? Message.GetLocationP()
         val response = Await.result(future, timeout.duration).asInstanceOf[Location]
         log.info("at " + passengers(i) + " " + response.name)
         finalsLocation = finalsLocation ::: List("at " + passengers(i) + " " + response.name)
@@ -116,7 +116,7 @@ object Simulator {
           //taxi start drive
           if (action.contains("drive")) {
             val drive : Drive = new Drive(action, locations)
-            val future = actorsTaxi(i) ? StartActionDriveT(drive)
+            val future = actorsTaxi(i) ? Message.StartActionDriveT(drive)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if (response.compareTo("OK") != 0) {
               log.error(response)
@@ -126,7 +126,7 @@ object Simulator {
           //taxi start enter
           if (action.contains("enter")) {
             val enter : Enter = new Enter(action, locations)
-            val future = actorsTaxi(i) ? StartActionEnterT(enter)
+            val future = actorsTaxi(i) ? Message.StartActionEnterT(enter)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if (response.compareTo("OK") != 0) {
               log.error(response)
@@ -136,7 +136,7 @@ object Simulator {
           //taxi start exit
           if (action.contains("exit")) {
             val exit : Exit = new Exit(action, locations)
-            val future = actorsTaxi(i) ? StartActionExitT(exit)
+            val future = actorsTaxi(i) ? Message.StartActionExitT(exit)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if (response.compareTo("OK") != 0) {
               log.error(response) //prints the error
@@ -149,17 +149,17 @@ object Simulator {
           implicit val timeout = Timeout(5 seconds)
           if (action.contains("drive")) {
             val drive : Drive = new Drive(action, locations)
-            val future = actorsTaxi(i) ? EndActionDriveT(drive)
+            val future = actorsTaxi(i) ? Message.EndActionDriveT(drive)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
           if (action.contains("enter")) {
             val enter : Enter = new Enter(action, locations)
-            val future = actorsTaxi(i) ? EndActionEnterT(enter)
+            val future = actorsTaxi(i) ? Message.EndActionEnterT(enter)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
           if (action.contains("exit")) {
             val exit : Exit = new Exit(action, locations)
-            val future = actorsTaxi(i) ? EndActionExitT(exit)
+            val future = actorsTaxi(i) ? Message.EndActionExitT(exit)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
         }
@@ -174,7 +174,7 @@ object Simulator {
           implicit val timeout = Timeout(5 seconds)
           if(action.contains("enter")) {
             val enter : Enter = new Enter(action, locations)
-            val future = actorsPassengers(i) ? StartActionEnterP(enter)
+            val future = actorsPassengers(i) ? Message.StartActionEnterP(enter)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if(response.compareTo("OK") != 0){
               log.error(response) //prints the error
@@ -183,7 +183,7 @@ object Simulator {
           }
           if(action.contains("exit")) {
             val exit : Exit = new Exit(action, locations)
-            val future = actorsPassengers(i) ? StartActionExitP(exit)
+            val future = actorsPassengers(i) ? Message.StartActionExitP(exit)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
             if(response.compareTo("OK") != 0){
               log.error(response) //prints the error
@@ -195,12 +195,12 @@ object Simulator {
           implicit val timeout = Timeout(5 seconds)
           if(action.contains("enter")){
             val enter : Enter = new Enter(action, locations)
-            val future = actorsPassengers(i) ? EndActionEnterP(enter)
+            val future = actorsPassengers(i) ? Message.EndActionEnterP(enter)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
           if(action.contains("exit")){
             val exit : Exit = new Exit(action, locations)
-            val future = actorsPassengers(i) ? EndActionExitP(exit)
+            val future = actorsPassengers(i) ? Message.EndActionExitP(exit)
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
 
@@ -222,7 +222,7 @@ object Simulator {
             for(location <- locations){
               if(parts(2).compareTo(location.name)==0){
                 location.taxiIn = taxis(i)
-                val future = actorsTaxi(i) ? SetLocationT(location)
+                val future = actorsTaxi(i) ? Message.SetLocationT(location)
                 val response = Await.result(future, timeout.duration).asInstanceOf[Location]
               }
             }
@@ -233,7 +233,7 @@ object Simulator {
             for(location <- locations){
               if(parts(2).compareTo(location.name)==0){
                 location.addPassengerIn(passengers(i))
-                val future = actorsPassengers(i) ? SetLocationP(location)
+                val future = actorsPassengers(i) ? Message.SetLocationP(location)
                 val response = Await.result(future, timeout.duration).asInstanceOf[Location]
               }
             }
@@ -246,7 +246,7 @@ object Simulator {
         var parts : Array[String] = init.split(" ")
         for (i <- taxis.indices){
           if (parts(1).compareTo(taxis(i)) ==0){
-            val future = actorsTaxi(i) ? SetPassengerInT("")
+            val future = actorsTaxi(i) ? Message.SetPassengerInT("")
             val response = Await.result(future, timeout.duration).asInstanceOf[String]
           }
         }
@@ -258,7 +258,7 @@ object Simulator {
           if (parts(1).compareTo(passengers(i)) == 0) {
             for (location <- locations) {
               if (parts(2).compareTo(location.name) == 0) {
-                val future = actorsPassengers(i) ? SetLocationGoalP(location)
+                val future = actorsPassengers(i) ? Message.SetLocationGoalP(location)
                 val response = Await.result(future, timeout.duration).asInstanceOf[Location]
               }
             }
