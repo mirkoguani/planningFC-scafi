@@ -15,6 +15,7 @@ import scala.concurrent.{Await, Future}
 
 class PassengerTest  extends  AnyFlatSpecLike with BeforeAndAfterAll with Matchers{
   val log: Logger = Logger.getLogger(this.getClass.getName)
+
   "GetLocationP" should "gets the passenger's location" in {
     val system = ActorSystem("SimulationActorSystem")
     val passenger : ActorRef = system.actorOf(Props[Passenger](),"Passenger")

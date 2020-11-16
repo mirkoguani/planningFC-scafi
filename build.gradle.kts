@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation("it.unibo.alchemist:alchemist:9.2.1")
     implementation("it.unibo.alchemist:alchemist-incarnation-scafi:9.2.1")
-    implementation("org.scala-lang:scala-library:2.12.2")
+    implementation("org.scala-lang:scala-library:2.13.2")
     implementation("it.unibo.apice.scafiteam:scafi-core_2.12:0.3.2")
     implementation("com.typesafe.akka:akka-actor_2.13:2.6.10")
     implementation("com.typesafe.akka:akka-remote_2.13:2.6.10")
