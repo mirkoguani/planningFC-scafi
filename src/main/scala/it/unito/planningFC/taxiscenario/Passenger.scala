@@ -1,7 +1,7 @@
 package it.unito.planningFC.taxiscenario
 
 import akka.actor.Actor
-import it.unito.planningFC.taxiscenario.Message
+import it.unito.planningFC.taxiscenario.MyIncarnationAP.{EXPORT, ID, NSNS}
 
 class Passenger extends Actor {
 
@@ -9,6 +9,12 @@ class Passenger extends Actor {
   var inTaxi: String = ""
   var xfreex: Boolean = true //if the taxi is free to be used (true) or busy in an action (false)
   var locationGoal:Location = new Location
+  var selfID: Int = -1
+
+  var neighborhood : Set[ID] = Set()
+  var exports : Map[ID,EXPORT]= Map()
+  var LSNS : Map[String,Any]= Map()
+  var NSNS : Map[NSNS,Map[ID,Any]] = Map()
 
 
   override def receive: Receive = {
@@ -29,7 +35,7 @@ class Passenger extends Actor {
     }
 
     case Message.StartActionExitP(actionExit : Exit) => {
-      if (inTaxi.compareTo(actionExit.taxi) == 0 && xfreex && locationGoal.name.compareTo(actionExit.location.name) ==0) {
+      if (inTaxi.compareTo(actionExit.taxi) == 0 && xfreex && locationGoal.name.compareTo(actionExit.location.name) == 0) {
         xfreex = false
         sender() ! "OK"
       } else {
@@ -55,6 +61,11 @@ class Passenger extends Actor {
       sender() ! locationGoal
     }
 
+    case Message.GetSelfIDP () => {
+      sender() ! selfID
+    }
+
+
     case Message.SetLocationP (loc : Location) => {
       location = loc
       sender() ! location
@@ -68,6 +79,36 @@ class Passenger extends Actor {
     case Message.SetLocationGoalP (locGoal : Location) => {
       locationGoal = locGoal
       sender() ! locationGoal
+    }
+
+    case Message.SetSelfIDP (id : Int) => {
+      selfID = id
+      sender() ! selfID
+    }
+
+    case Message.ReceiveNeighborhoodP(neighborhoodP : Set[ID]) => {
+      neighborhood = neighborhoodP
+      sender() ! "OK"
+    }
+    case Message.ReceiveExportsP(exportsP: Map[ID,EXPORT]) => {
+      exports = exportsP
+      sender() ! "OK"
+    }
+
+    case Message.ReceiveLSNSP(lsnsP : Map[String,Any]) => {
+      LSNS = lsnsP
+      sender() ! "OK"
+    }
+
+    case Message.ReceiveNSNSP(nsnsP: Map[NSNS,Map[ID,Any]]) => {
+      NSNS = nsnsP
+      sender() ! "OK"
+    }
+
+    case Message.RunAggregateProgramP() => {
+      var aggregateProgram : GradientAggregateProgram = new GradientAggregateProgram()
+      var export : EXPORT = aggregateProgram.roundAggregateProgram(selfID, exports, LSNS, NSNS)
+      sender() ! export
     }
 
   }

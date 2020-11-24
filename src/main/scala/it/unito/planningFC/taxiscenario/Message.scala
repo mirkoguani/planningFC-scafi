@@ -1,5 +1,7 @@
 package it.unito.planningFC.taxiscenario
 
+import it.unito.planningFC.taxiscenario.MyIncarnationAP.{EXPORT, ID, NSNS}
+
 object Message {
   //taxi messages
   case class StartActionDriveT(actionDrive : Drive)
@@ -10,8 +12,15 @@ object Message {
   case class EndActionExitT(actionExit : Exit)
   case class GetLocationT ()
   case class GetPassengerInT()
+  case class GetSelfIDT()
   case class SetLocationT(location:Location)
   case class SetPassengerInT(passenger:String)
+  case class SetSelfIDT(id: Int)
+  case class ReceiveNeighborhoodT(neighborhoodT: Set[Int])
+  case class ReceiveExportsT(exportsT: Map[ID,EXPORT])
+  case class ReceiveLSNST(lsnsT : Map[String,Any])
+  case class ReceiveNSNST(nsnsT: Map[NSNS,Map[ID,Any]])
+  case class RunAggregateProgramT()
   //passengers messages
   case class StartActionEnterP(actionEnter : Enter)
   case class EndActionEnterP(actionEnter : Enter)
@@ -20,7 +29,36 @@ object Message {
   case class GetLocationP()
   case class GetInTaxiP()
   case class GetLocationGoalP()
+  case class GetSelfIDP()
   case class SetLocationP(location:Location)
   case class SetInTaxiP(taxi:String)
   case class SetLocationGoalP(location: Location)
+  case class SetSelfIDP(id: Int)
+  case class ReceiveNeighborhoodP(neighborhoodP: Set[Int])
+  case class ReceiveExportsP(exportsP: Map[ID,EXPORT])
+  case class ReceiveLSNSP(lsnsP : Map[String,Any])
+  case class ReceiveNSNSP(nsnsP: Map[NSNS,Map[ID,Any]])
+  case class RunAggregateProgramP()
+  //locations messages
+  case class GetNameL()
+  case class GetTaxiInL()
+  case class GetPassengersInL()
+  case class GetFreeL()
+  case class GetSelfIDL()
+  case class SetNameL(nameLoc: String)
+  case class SetTaxiInL(taxi: String)
+  case class SetPassengersInL(passengers: List[String])
+  case class SetFreeL(isFree : Boolean)
+  case class AddPassengerInL(passenger: String)
+  case class AddConnectedLocationL(location: Location)
+  case class RemovePassengerInL(namePassenger: String)
+  case class IsDirectlyConnectedByNameL(nameLocation: String)
+  case class IsDirectlyConnectedByLocL(location: Location)
+  case class SetSelfIDL(id: Int)
+  case class ReceiveNeighborhoodL(neighborhoodL: Set[Int])
+  case class ReceiveExportsL(exportsL: Map[ID,EXPORT])
+  case class ReceiveLSNSL(lsnsL : Map[String,Any])
+  case class ReceiveNSNSL(nsnsL: Map[NSNS,Map[ID,Any]])
+  case class RunAggregateProgramL()
+
 }

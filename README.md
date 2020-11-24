@@ -7,3 +7,5 @@ It is structured as follows: setupSimultation, then in loop it executes and mana
 Based on the actions of the FEL, the actions of the Plan are implemented, and they will have effects on the actors (Taxis and Passengers), to whom the actions are communicated via messages.
 
 - Added the ability to call POPF2 planner on Docker container (image Docker: https://github.com/mirkoguani/DockerPlanners) from Scala
+
+- Added the ability to run aggregate programs 

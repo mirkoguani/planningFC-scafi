@@ -1,20 +1,23 @@
 package it.unito.planningFC.taxiscenario
 
 import akka.actor.Actor
-import it.unito.planningFC.taxiscenario.Message
-
-
+import it.unito.planningFC.taxiscenario.MyIncarnationAP.{EXPORT, ID, NSNS}
 
 class Taxi extends Actor {
 
   var location:Location = new Location
   var passengerIn: String = ""
   var xfreex: Boolean = true //if the taxi is free to be used (true) or busy in an action (false)
+  var selfID: ID = -1
+
+  var neighborhood : Set[ID] = Set()
+  var exports : Map[ID,EXPORT]= Map()
+  var LSNS : Map[String,Any]= Map()
+  var NSNS : Map[NSNS,Map[ID,Any]] = Map()
 
   override def receive: Receive = {
 
     case Message.StartActionDriveT(actionDrive: Drive) => {
-
       //ensuring that the taxi location is the same in the action
       if(location.name.compareTo(actionDrive.locationFrom.name) == 0 && xfreex && actionDrive.locationTo.taxiIn.compareTo("") ==0) {
         xfreex = false
@@ -81,6 +84,10 @@ class Taxi extends Actor {
       sender() ! passengerIn
     }
 
+    case Message.GetSelfIDT () => {
+      sender() ! selfID
+    }
+
     case Message.SetLocationT (loc : Location) => {
       location = loc
       sender() ! location
@@ -90,6 +97,37 @@ class Taxi extends Actor {
       passengerIn = passenger
       sender() ! passengerIn
     }
+
+    case Message.SetSelfIDT (id :ID) => {
+      selfID = id
+      sender() ! selfID
+    }
+
+    case Message.ReceiveNeighborhoodT(neighborhoodT : Set[ID]) => {
+      neighborhood = neighborhoodT
+      sender() ! "OK"
+    }
+    case Message.ReceiveExportsT(exportsT: Map[ID,EXPORT]) => {
+      exports = exportsT
+      sender() ! "OK"
+    }
+
+    case Message.ReceiveLSNST(lsnsT : Map[String,Any]) => {
+      LSNS = lsnsT
+      sender() ! "OK"
+    }
+
+    case Message.ReceiveNSNST(nsnsT: Map[NSNS,Map[ID,Any]]) => {
+      NSNS = nsnsT
+      sender() ! "OK"
+    }
+
+    case Message.RunAggregateProgramT() => {
+      var aggregateProgram : GradientAggregateProgram = new GradientAggregateProgram()
+      var export : EXPORT = aggregateProgram.roundAggregateProgram(selfID, exports, LSNS, NSNS)
+      sender() ! export
+    }
+
 
   }
 }

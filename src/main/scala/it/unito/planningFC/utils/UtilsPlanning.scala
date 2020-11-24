@@ -205,7 +205,7 @@ object UtilsPlanning {
     return passengers
   }
 
-  private def locationsStrFromProblem (pathProblem : String, nameProblem : String):List[String]  = {
+  def locationsStrFromProblem (pathProblem : String, nameProblem : String):List[String]  = {
     var objects : List[String] = objectsFromProblem(pathProblem,nameProblem)
     var locations : List[String] = List.empty
 
@@ -219,64 +219,7 @@ object UtilsPlanning {
     return locations
   }
 
-  def locationsFromProblem (pathProblem : String, nameProblem : String):List[Location]  = {
-    var locationsStr : List[String] = locationsStrFromProblem(pathProblem, nameProblem)
-    var locations : List[Location] = List.empty
 
-    // From the names of the locations we create the Location instances
-    for (locationName <- locationsStr) {
-      var location: Location = new Location()
-      location.name = locationName
-      locations = locations ::: List(location)
-    }
-    //Using the problemS.pddl we fill in the other fields of the Location instances
-    var inits:List[String] = initsFromProblem(pathProblem,nameProblem)
-    //we are interested in prepositions: at , free, directly-connected
-    for (init <- inits){
-      //preposition : at
-      if(init.contains("at")){
-        var parts : Array[String] = init.split(" ")
-        // add taxi to the Location
-        if(parts(1).startsWith("t")){
-          for (location <- locations){
-            if(parts(2).compareTo(location.name) == 0){
-              location.taxiIn = parts(1)
-            }
-          }
-        }
-        if(parts(1).startsWith("p")){
-          for (location <- locations){
-            if(parts(2).compareTo(location.name) == 0){
-              location.addPassengerIn(parts(1))
-            }
-          }
-        }
-      }
-      //preposition : free
-      if(init.contains("free")){
-        var parts : Array[String] = init.split(" ")
-        for (location <- locations){
-          if(parts(1).compareTo(location.name) == 0){
-            location.free = true
-          }
-        }
-      }
-      //preposition : directly-connected
-      if(init.contains("directly-connected")){
-        var parts : Array[String] = init.split(" ")
-        for (locationFrom <- locations){
-          if(parts(1).compareTo(locationFrom.name) == 0){
-            for (locationTo <- locations){
-              if(parts(2).compareTo(locationTo.name) == 0){
-                locationFrom.addConnectedLocation(locationTo)
-              }
-            }
-          }
-        }
-      }
-    }
-    return locations
-  }
 
   def startPlanningOnDocker (pathProblem: String, nameProblem:String, idContainer : String) : Int = {
     var pathProblemUnix : String = pathWindowsToPathUnix(pathProblem)

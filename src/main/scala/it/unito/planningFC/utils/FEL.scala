@@ -67,4 +67,20 @@ class FEL {
     return listFEL
   }
 
+  //useful for obtaining the makespan
+  def getSecLastEventTime(): Double = {
+    return actionsFEL(actionsFEL.length -2).timeOccurrence
+  }
+
+  def addBroadcastEventsInFEL(broadcastFrequency: Double) : Unit = {
+    var secLastEventTime : Double = getSecLastEventTime()
+    // + (secLastEventTime * 10)  is for adding additional BROADCAST events even after plan conclusion
+    //var numTimesBroadcast : Int = ((secLastEventTime + (secLastEventTime * 10)) / (broadcastFrequency)).toInt
+    var numTimesBroadcast : Int = ((secLastEventTime + secLastEventTime * 0.05) / (broadcastFrequency)).toInt
+
+    for (i <- 0 until numTimesBroadcast){ //numTimesBroadcast   //50 è per DEBUG
+      addEventFEL("BROADCAST", i * broadcastFrequency)
+    }
+  }
+
 }

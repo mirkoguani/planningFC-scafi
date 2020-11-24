@@ -18,16 +18,16 @@ repositories {
 dependencies {
     implementation("it.unibo.alchemist:alchemist:9.2.1")
     implementation("it.unibo.alchemist:alchemist-incarnation-scafi:9.2.1")
-    implementation("org.scala-lang:scala-library:2.13.2")
+    implementation("org.scala-lang:scala-library:2.12.2")
     implementation("it.unibo.apice.scafiteam:scafi-core_2.12:0.3.2")
-    implementation("com.typesafe.akka:akka-actor_2.13:2.6.10")
-    implementation("com.typesafe.akka:akka-remote_2.13:2.6.10")
+    implementation("com.typesafe.akka:akka-actor_2.12:2.6.10")
+    implementation("com.typesafe.akka:akka-remote_2.12:2.6.10")
     //implementation("it.unibo.scafi:scafi-distributed_2.13:0.3.3")
-    implementation("com.typesafe.scala-logging:scala-logging_2.13:3.9.2")
+    implementation("com.typesafe.scala-logging:scala-logging_2.12:3.9.2")
     implementation("ch.qos.logback:logback-classic:1.3.0-alpha5")
-    implementation("org.scalactic:scalactic_2.13:3.2.2")
-    implementation("org.scalatest:scalatest_2.13:3.2.2")
-    implementation("com.typesafe.akka:akka-testkit_2.13:2.6.10")
+    implementation("org.scalactic:scalactic_2.12:3.2.2")
+    implementation("org.scalatest:scalatest_2.12:3.2.2")
+    implementation("com.typesafe.akka:akka-testkit_2.12:2.6.10")
 
 
 
